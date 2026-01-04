@@ -1,0 +1,48 @@
+.headerContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  right: 28px;
+  z-index: 50;
+  pointer-events: auto;
+}
+
+/* Header bar - takes remaining space */
+.headerBar {
+  flex: 1;
+  height: 60px;
+  border-radius: 50px;
+  border: var(--border-thick) solid var(--color-border);
+  background-color: #00000022;
+  backdrop-filter: blur(10px);
+}
+
+/* Order Now button */
+.orderButton {
+  background-color: var(--color-secondary);
+  flex-shrink: 0;
+  height: 60px;
+  padding: 0 var(--spacing-xl);
+  border-radius: 50px 0px 50px 50px;
+  border: var(--border-thick) solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.orderButton:hover {
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  border-radius: 20px 0px 20px 20px;
+
+}
+
+.orderButton:active {
+  transform: scale(0.95);
+}

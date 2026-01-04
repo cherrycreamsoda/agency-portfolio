@@ -25,20 +25,6 @@
   overflow: hidden;
 }
 
-/* Header bar - fixed positioning, stays on screen */
-.headerBar {
-  position: fixed;
-  top: 30px;
-  left: 30px;
-  right: 200px;
-  height: 60px;
-  border-radius: 50px;
-  border: var(--border-thick) solid var(--color-border);
-  z-index: 50;
-  pointer-events: auto;
-  background-color: #00000022;
-  backdrop-filter: blur(10px);
-}
 /* Left section of hero */
 .heroLeft {
   /* 40% width for left section */

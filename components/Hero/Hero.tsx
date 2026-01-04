@@ -134,7 +134,6 @@ export function Hero() {
 
   return (
     <section className={styles.hero} data-hero ref={heroRef}>
-      <div className={styles.headerBar} />
       <div className={styles.heroLeft}>
         <h1 className={styles.heroTitle}>Welcome to Our Agency</h1>
       </div>
