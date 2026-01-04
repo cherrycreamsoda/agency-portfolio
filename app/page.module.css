@@ -1,0 +1,28 @@
+.container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--color-primary);
+  overflow: hidden;
+}
+
+.bleedingOrb {
+  position: absolute;
+  top: -20%;
+  right: -20%;
+  width: 70%;
+  height: 70%;
+  background-color: var(--color-secondary);
+  border-radius: 50%;
+  filter: blur(150px);
+  pointer-events: none;
+  z-index: var(--z-base);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

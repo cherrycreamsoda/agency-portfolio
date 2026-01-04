@@ -1,0 +1,100 @@
+.hero {
+  /* Transparent box with margin */
+  margin: var(--spacing-md);
+
+  /* Border styling */
+  border: var(--border-thick) solid var(--color-border);
+
+  /* Asymmetric border radius: top-left & bottom-right rounded, others sharp */
+  border-radius: var(--radius-2xl) 0 var(--radius-2xl) 0;
+
+  /* Transparent background */
+  background-color: transparent;
+
+  /* Fixed height for landing section */
+  height: calc(100vh - (var(--spacing-md) * 2));
+
+  /* Positioning context for future content */
+  position: relative;
+
+  /* Flex row to split into left and right */
+  display: flex;
+  flex-direction: row;
+
+  /* Hide overflow for pinning */
+  overflow: hidden;
+}
+
+/* Header bar - fixed positioning, stays on screen */
+.headerBar {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  right: 200px;
+  height: 60px;
+  border-radius: 50px;
+  border: var(--border-thick) solid var(--color-border);
+  z-index: 50;
+  pointer-events: auto;
+  background-color: #00000022;
+  backdrop-filter: blur(10px);
+}
+/* Left section of hero */
+.heroLeft {
+  /* 40% width for left section */
+  flex: 0 0 40%;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--spacing-4xl);
+  padding-left: var(--spacing-2xl);
+  padding-right: var(--spacing-lg);
+}
+
+/* Right section of hero */
+.heroRight {
+  /* 60% width, 0 padding */
+  flex: 0 0 60%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Hero title styling */
+.heroTitle {
+  font-size: var(--font-size-5xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-tight);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Columns wrapper - contains all 2 columns */
+.columnsWrapper {
+  padding-right: var(--spacing-sm);
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-sm);
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Individual column - infinite scroll container */
+.column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Inner column that holds duplicated cards for infinite loop */
+.columnInner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  will-change: transform;
+}

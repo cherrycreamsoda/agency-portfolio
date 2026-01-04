@@ -1,0 +1,25 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-dropdown);
+
+}
+
+.maskSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.blurLayer {
+  position: absolute;
+  inset: 0;
+  background-color: var(--glass-background);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  /* Use same SVG mask via CSS - we'll clip this with the mask */
+  mask: url(#glassMask);
+  -webkit-mask: url(#glassMask);
+}
