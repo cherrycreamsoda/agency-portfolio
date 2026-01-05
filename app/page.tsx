@@ -33,6 +33,7 @@ const calculateOrbPosition = (progress: number): string => {
 
 export default function Home() {
   const orbRef = useRef<HTMLDivElement>(null)
+  const fillRef = useRef<HTMLDivElement>(null)
   const progressRef = useRef<number>(0)
   const lastUpdateRef = useRef<number>(0)
 
@@ -53,6 +54,11 @@ export default function Home() {
 
     // Single DOM update with pre-calculated string
     orbRef.current.style.transform = calculateOrbPosition(progressRef.current)
+
+    // Update progress fill height (fast integer operation)
+    if (fillRef.current) {
+      fillRef.current.style.height = `${progressRef.current}%`
+    }
   }, [])
 
   return (
@@ -60,6 +66,12 @@ export default function Home() {
       <div className={styles.bleedingOrb} ref={orbRef} />
       <GlassmorphicOverlay cutoutSelector="[data-hero]" />
       <Header />
+      
+      {/* Progress Indicator - tied to orb progress */}
+      <div className={styles.progressCapsule}>
+        <div className={styles.progressFill} ref={fillRef} />
+      </div>
+      
       <div className={styles.content}>
         <Hero onScrollVelocity={handleScrollVelocity} />
       </div>
