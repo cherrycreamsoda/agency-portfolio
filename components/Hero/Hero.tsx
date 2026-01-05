@@ -37,13 +37,14 @@ const columnConfig = [
   { direction: 1 }, // Column 2: moves down
 ]
 
-export function Hero() {
+export function Hero({ onScrollVelocity }: { onScrollVelocity?: (velocity: number) => void }) {
   const heroRef = useRef<HTMLElement>(null)
   const columnRefs = useRef<(HTMLDivElement | null)[]>([])
   const positionsRef = useRef<number[]>([0, 0])
   const pausedRef = useRef<boolean[]>([false, false])
   const scrollVelocityRef = useRef<number>(0)
   const rafRef = useRef<number | null>(null)
+  const lastScrollCallTimeRef = useRef<number>(0)
 
   useEffect(() => {
     if (!heroRef.current) return
@@ -112,6 +113,13 @@ export function Hero() {
 
     const handleWheel = (e: WheelEvent) => {
       scrollVelocityRef.current += e.deltaY * 0.015
+      
+      // Throttle scroll callback to 16.67ms (60fps) for optimal performance
+      const now = performance.now()
+      if (now - lastScrollCallTimeRef.current >= 16.67) {
+        lastScrollCallTimeRef.current = now
+        onScrollVelocity?.(scrollVelocityRef.current)
+      }
     }
 
     window.addEventListener("wheel", handleWheel, { passive: true })
@@ -122,7 +130,7 @@ export function Hero() {
       }
       window.removeEventListener("wheel", handleWheel)
     }
-  }, [])
+  }, [onScrollVelocity])
 
   const handleColumnMouseEnter = (index: number) => {
     pausedRef.current[index] = true
