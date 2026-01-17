@@ -1,28 +1,31 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, RefObject } from "react"
 import styles from "./GlassmorphicOverlay.module.css"
 
 interface GlassmorphicOverlayProps {
-  /** CSS selector for the cutout element (e.g., '[data-hero]') */
-  cutoutSelector: string
+  /** Ref to the hero element for positioning */
+  heroRef: RefObject<HTMLElement | null>
 }
 
-export function GlassmorphicOverlay({ cutoutSelector }: GlassmorphicOverlayProps) {
+export function GlassmorphicOverlay({ heroRef }: GlassmorphicOverlayProps) {
   const svgRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
     const updateMask = () => {
-      const cutoutElement = document.querySelector(cutoutSelector)
+      const heroElement = heroRef.current
       const svg = svgRef.current
 
-      if (!cutoutElement || !svg) return
+      if (!heroElement || !svg) return
 
-      const rect = cutoutElement.getBoundingClientRect()
+      // Get hero's position relative to viewport
+      const heroRect = heroElement.getBoundingClientRect()
+      
+      // Full viewport dimensions
       const viewportWidth = window.innerWidth
       const viewportHeight = window.innerHeight
 
-      // Update SVG viewBox
+      // Update SVG viewBox to cover full viewport
       svg.setAttribute("viewBox", `0 0 ${viewportWidth} ${viewportHeight}`)
 
       // Get the mask path element
@@ -31,6 +34,13 @@ export function GlassmorphicOverlay({ cutoutSelector }: GlassmorphicOverlayProps
 
       const r = 52
 
+      // Hero bounds in viewport coordinates
+      const left = heroRect.left
+      const top = heroRect.top
+      const right = heroRect.right
+      const bottom = heroRect.bottom
+
+      // Create path: outer rectangle (full viewport) with inner cutout (hero)
       // Top-left rounded, top-right sharp, bottom-right rounded, bottom-left sharp
       const path = `
         M 0 0
@@ -38,13 +48,13 @@ export function GlassmorphicOverlay({ cutoutSelector }: GlassmorphicOverlayProps
         L ${viewportWidth} ${viewportHeight}
         L 0 ${viewportHeight}
         Z
-        M ${rect.left + r} ${rect.top}
-        L ${rect.right} ${rect.top}
-        L ${rect.right} ${rect.bottom - r}
-        Q ${rect.right} ${rect.bottom} ${rect.right - r} ${rect.bottom}
-        L ${rect.left} ${rect.bottom}
-        L ${rect.left} ${rect.top + r}
-        Q ${rect.left} ${rect.top} ${rect.left + r} ${rect.top}
+        M ${left + r} ${top}
+        L ${right} ${top}
+        L ${right} ${bottom - r}
+        Q ${right} ${bottom} ${right - r} ${bottom}
+        L ${left} ${bottom}
+        L ${left} ${top + r}
+        Q ${left} ${top} ${left + r} ${top}
         Z
       `
 
@@ -57,14 +67,10 @@ export function GlassmorphicOverlay({ cutoutSelector }: GlassmorphicOverlayProps
     // Update on resize
     window.addEventListener("resize", updateMask)
 
-    // Update on scroll (in case of scrollable content)
-    window.addEventListener("scroll", updateMask)
-
     return () => {
       window.removeEventListener("resize", updateMask)
-      window.removeEventListener("scroll", updateMask)
     }
-  }, [cutoutSelector])
+  }, [heroRef])
 
   return (
     <div className={styles.overlay}>

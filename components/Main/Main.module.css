@@ -1,0 +1,35 @@
+.main {
+  /* Fill exactly the viewport height for internal scrolling */
+  height: 100vh;
+  width: 100%;
+  
+  /* Scrollable content */
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  /* Background */
+  background-color: var(--color-primary);
+  
+  /* Padding */
+  padding: var(--spacing-2xl);
+}
+
+.content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xl);
+}
+
+.paragraph {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--spacing-md);
+  opacity: 0.8;
+}

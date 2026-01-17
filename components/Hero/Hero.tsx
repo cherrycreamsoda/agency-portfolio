@@ -1,8 +1,32 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useCallback } from "react"
 import styles from "./Hero.module.css"
 import { Card } from "./Cards"
+import { GlassmorphicOverlay } from "../GlassmorphicOverlay"
+import { useScrollController } from "@/context"
+
+// Optimized position calculation for orb
+const calculateOrbPosition = (progress: number): string => {
+  const p = progress < 0 ? 0 : progress > 100 ? 100 : progress
+
+  let y: number, x: number
+
+  if (p <= 50) {
+    const t = p * 0.02
+    y = t * 50
+    x = 0
+  } else {
+    const t = (p - 50) * 0.02
+    y = 50 + t * 5
+    x = -t * 35
+  }
+
+  const ry = Math.round(y * 10) * 0.1
+  const rx = Math.round(x * 10) * 0.1
+
+  return `translate(${rx}%, ${ry}%)`
+}
 
 // AI Automation cards data
 const cardsData = [
@@ -37,7 +61,9 @@ const columnConfig = [
   { direction: 1 }, // Column 2: moves down
 ]
 
-export function Hero({ onScrollVelocity }: { onScrollVelocity?: (velocity: number) => void }) {
+export function Hero() {
+  const { state, setProgress, handleHeroScroll, heroResetRef, progress } = useScrollController()
+  
   const heroRef = useRef<HTMLElement>(null)
   const columnRefs = useRef<(HTMLDivElement | null)[]>([])
   const positionsRef = useRef<number[]>([0, 0])
@@ -45,6 +71,67 @@ export function Hero({ onScrollVelocity }: { onScrollVelocity?: (velocity: numbe
   const scrollVelocityRef = useRef<number>(0)
   const rafRef = useRef<number | null>(null)
   const lastScrollCallTimeRef = useRef<number>(0)
+  
+  // Orb and progress refs
+  const orbRef = useRef<HTMLDivElement>(null)
+  const fillRef = useRef<HTMLDivElement>(null)
+  const progressRef = useRef<number>(0)
+  const lastUpdateRef = useRef<number>(0)
+
+  // Reset function - resets orb position and progress visuals
+  const resetHeroState = useCallback(() => {
+    progressRef.current = 0
+    if (orbRef.current) {
+      orbRef.current.style.transform = calculateOrbPosition(0)
+    }
+    if (fillRef.current) {
+      fillRef.current.style.height = "0%"
+    }
+    scrollVelocityRef.current = 0
+  }, [])
+
+  // Register reset function with controller
+  useEffect(() => {
+    heroResetRef.current = resetHeroState
+    return () => {
+      heroResetRef.current = null
+    }
+  }, [heroResetRef, resetHeroState])
+
+  // Sync visual state with controller progress
+  useEffect(() => {
+    if (orbRef.current) {
+      orbRef.current.style.transform = calculateOrbPosition(progress)
+    }
+    if (fillRef.current) {
+      fillRef.current.style.height = `${progress}%`
+    }
+    progressRef.current = progress
+  }, [progress])
+
+  const handleScrollVelocity = useCallback((velocity: number) => {
+    if (!orbRef.current) return
+    
+    // Calculate new progress
+    const newProgress = progressRef.current + velocity * 0.2
+    const clampedProgress = Math.max(0, Math.min(100, newProgress))
+    
+    // Update local ref
+    progressRef.current = clampedProgress
+    
+    // Update controller
+    setProgress(clampedProgress)
+
+    const now = performance.now()
+    if (now - lastUpdateRef.current < 16.67) return
+    lastUpdateRef.current = now
+
+    orbRef.current.style.transform = calculateOrbPosition(clampedProgress)
+
+    if (fillRef.current) {
+      fillRef.current.style.height = `${clampedProgress}%`
+    }
+  }, [setProgress])
 
   useEffect(() => {
     if (!heroRef.current) return
@@ -112,13 +199,24 @@ export function Hero({ onScrollVelocity }: { onScrollVelocity?: (velocity: numbe
     rafRef.current = requestAnimationFrame(animate)
 
     const handleWheel = (e: WheelEvent) => {
-      scrollVelocityRef.current += e.deltaY * 0.015
+      // Ask controller if Hero should process this scroll
+      const shouldProcess = handleHeroScroll(e.deltaY)
+      
+      if (!shouldProcess) {
+        // Don't process scroll - we're transitioning or blocked
+        return
+      }
+      
+      // Only affect card columns in HERO_SCROLLING state
+      if (state === "HERO_SCROLLING") {
+        scrollVelocityRef.current += e.deltaY * 0.015
+      }
       
       // Throttle scroll callback to 16.67ms (60fps) for optimal performance
       const now = performance.now()
       if (now - lastScrollCallTimeRef.current >= 16.67) {
         lastScrollCallTimeRef.current = now
-        onScrollVelocity?.(scrollVelocityRef.current)
+        handleScrollVelocity(scrollVelocityRef.current)
       }
     }
 
@@ -130,7 +228,7 @@ export function Hero({ onScrollVelocity }: { onScrollVelocity?: (velocity: numbe
       }
       window.removeEventListener("wheel", handleWheel)
     }
-  }, [onScrollVelocity])
+  }, [handleScrollVelocity, handleHeroScroll, state])
 
   const handleColumnMouseEnter = (index: number) => {
     pausedRef.current[index] = true
@@ -141,13 +239,25 @@ export function Hero({ onScrollVelocity }: { onScrollVelocity?: (velocity: numbe
   }
 
   return (
-    <section className={styles.hero} data-hero ref={heroRef}>
-      <div className={styles.heroLeft}>
-        <h1 className={styles.heroTitle}>Welcome to Our Agency</h1>
+    <div className={styles.heroWrapper}>
+      {/* Bleeding orb - contained within hero wrapper */}
+      <div className={styles.bleedingOrb} ref={orbRef} />
+      
+      {/* Glassmorphic overlay - covers full viewport but contained in wrapper */}
+      <GlassmorphicOverlay heroRef={heroRef} />
+      
+      {/* Progress capsule - contained within hero wrapper */}
+      <div className={styles.progressCapsule}>
+        <div className={styles.progressFill} ref={fillRef} />
       </div>
-      <div className={styles.heroRight}>
-        <div className={styles.columnsWrapper}>
-          {[0, 1].map((colIndex) => (
+      
+      <section className={styles.hero} data-hero ref={heroRef}>
+        <div className={styles.heroLeft}>
+          <h1 className={styles.heroTitle}>Welcome to Our Agency</h1>
+        </div>
+        <div className={styles.heroRight}>
+          <div className={styles.columnsWrapper}>
+            {[0, 1].map((colIndex) => (
             <div
               key={colIndex}
               className={styles.column}
@@ -189,6 +299,7 @@ export function Hero({ onScrollVelocity }: { onScrollVelocity?: (velocity: numbe
           ))}
         </div>
       </div>
-    </section>
+      </section>
+    </div>
   )
 }

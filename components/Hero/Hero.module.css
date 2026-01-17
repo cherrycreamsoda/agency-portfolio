@@ -1,7 +1,11 @@
-.hero {
-  /* Transparent box with margin */
+/* Hero wrapper - contains overlay and hero, no overflow restrictions */
+.heroWrapper {
+  position: relative;
   margin: var(--spacing-md);
+  height: calc(100vh - (var(--spacing-md) * 2));
+}
 
+.hero {
   /* Border styling */
   border: var(--border-thick) solid var(--color-border);
 
@@ -11,8 +15,8 @@
   /* Transparent background */
   background-color: transparent;
 
-  /* Fixed height for landing section */
-  height: calc(100vh - (var(--spacing-md) * 2));
+  /* Fill the wrapper */
+  height: 100%;
 
   /* Positioning context for future content */
   position: relative;
@@ -83,4 +87,43 @@
   flex-direction: column;
   gap: var(--spacing-sm);
   will-change: transform;
+}
+
+/* Bleeding orb - absolutely positioned within hero */
+.bleedingOrb {
+  position: absolute;
+  top: -20%;
+  right: -20%;
+  width: 70%;
+  height: 70%;
+  background-color: var(--color-secondary);
+  border-radius: 50%;
+  filter: blur(150px);
+  pointer-events: none;
+  z-index: var(--z-base);
+  will-change: transform;
+}
+
+/* Progress Capsule - contained within hero */
+.progressCapsule {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  z-index: 100;
+  width: 8px;
+  height: 30px;
+  border-radius: 4px;
+  border: 1px solid white;
+  background-color: transparent;
+  overflow: hidden;
+  will-change: contents;
+}
+
+.progressFill {
+  width: 100%;
+  height: 0%;
+  background-color: white;
+  border-radius: 4px;
+  transition: none;
+  will-change: height;
 }

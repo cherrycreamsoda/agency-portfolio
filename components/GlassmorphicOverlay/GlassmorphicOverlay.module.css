@@ -1,21 +1,28 @@
 .overlay {
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  /* Extend beyond wrapper bounds to cover full viewport */
+  top: calc(-1 * var(--spacing-md));
+  left: calc(-1 * var(--spacing-md));
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
   z-index: var(--z-dropdown);
-
 }
 
 .maskSvg {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
 }
 
 .blurLayer {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-color: var(--glass-background);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
