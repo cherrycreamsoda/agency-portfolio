@@ -20,16 +20,27 @@
   backdrop-filter: blur(10px);
 }
 
+/* Order Now button container */
+.orderButtonContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  overflow: visible;
+  height: 60px;
+}
+
 /* Order Now button */
 .orderButton {
   background-color: var(--color-secondary);
   flex-shrink: 0;
-  height: 60px;
-  padding: 0 var(--spacing-xl);
+  height: 48px;
+  width: 170px;
   border-radius: 50px 0px 50px 50px;
   border: var(--border-thick) solid var(--color-border);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   cursor: pointer;
   transition: all 0.3s ease;
@@ -40,9 +51,37 @@
   background-color: var(--color-primary);
   color: var(--color-secondary);
   border-radius: 20px 0px 20px 20px;
-
 }
 
 .orderButton:active {
   transform: scale(0.95);
+}
+
+/* Order button line wrapper - for overflow */
+.orderButtonLineWrapper {
+  width: 80%;
+  height: 12px;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translateY(4px);
+}
+
+/* Order button line - SVG element */
+.orderButtonLine {
+  width: 100%;
+  height: 24px;
+  overflow: visible;
+}
+
+/* Wave path - morphs from straight to wavy */
+.wavePath {
+  transition: d 1s ease-in-out;
+}
+
+/* Hover state - morph to wave */
+.orderButtonContainer:hover .wavePath {
+  d: path('M0,0 Q10,-8 20,0 T40,0 T60,0 T80,0 T100,0 T120,0 T140,0');
+  transform: translateY(2px);
 }
