@@ -113,23 +113,26 @@ export function Hero() {
     if (!orbRef.current) return
     
     // Calculate new progress
-    const newProgress = progressRef.current + velocity * 0.2
+    const newProgress = progressRef.current + velocity * 0.5
     const clampedProgress = Math.max(0, Math.min(100, newProgress))
     
     // Update local ref
     progressRef.current = clampedProgress
-    
-    // Update controller
-    setProgress(clampedProgress)
 
     const now = performance.now()
     if (now - lastUpdateRef.current < 16.67) return
     lastUpdateRef.current = now
 
+    // Update visuals directly (no React state update here)
     orbRef.current.style.transform = calculateOrbPosition(clampedProgress)
 
     if (fillRef.current) {
       fillRef.current.style.height = `${clampedProgress}%`
+    }
+
+    // Sync context state less frequently (every 100ms instead of every frame)
+    if (now - lastUpdateRef.current >= 100 || clampedProgress === 0 || clampedProgress === 100) {
+      setProgress(clampedProgress)
     }
   }, [setProgress])
 
@@ -247,13 +250,17 @@ export function Hero() {
       <GlassmorphicOverlay heroRef={heroRef} />
       
       {/* Progress capsule - contained within hero wrapper */}
-      <div className={styles.progressCapsule}>
-        <div className={styles.progressFill} ref={fillRef} />
-      </div>
-      
       <section className={styles.hero} data-hero ref={heroRef}>
         <div className={styles.heroLeft}>
           <h1 className={styles.heroTitle}>Welcome to Our Agency</h1>
+          
+          {/* Scroll label - positioned to the left of progress capsule */}
+          <div className={styles.scrollLabel}>Scroll</div>
+          
+          {/* Progress capsule - positioned at bottom-right of heroLeft */}
+          <div className={styles.progressCapsule}>
+            <div className={styles.progressFill} ref={fillRef} />
+          </div>
         </div>
         <div className={styles.heroRight}>
           <div className={styles.columnsWrapper}>

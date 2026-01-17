@@ -1,3 +1,8 @@
+@font-face {
+  font-family: 'Malvides';
+  src: url('/fonts/Malvides.otf') format('opentype');
+}
+
 /* Hero wrapper - contains overlay and hero, no overflow restrictions */
 .heroWrapper {
   position: relative;
@@ -38,6 +43,7 @@
   padding-top: var(--spacing-4xl);
   padding-left: var(--spacing-2xl);
   padding-right: var(--spacing-lg);
+  position: relative;
 }
 
 /* Right section of hero */
@@ -104,15 +110,15 @@
   will-change: transform;
 }
 
-/* Progress Capsule - contained within hero */
+/* Progress Capsule - positioned at bottom-right of heroLeft */
 .progressCapsule {
   position: absolute;
-  bottom: 30px;
-  left: 30px;
+  bottom: 12px;
+  right: 12px;
   z-index: 100;
-  width: 8px;
-  height: 30px;
-  border-radius: 4px;
+  width: 12px;
+  height: 100px;
+  border-radius: 6px;
   border: 1px solid white;
   background-color: transparent;
   overflow: hidden;
@@ -126,4 +132,16 @@
   border-radius: 4px;
   transition: none;
   will-change: height;
+}
+.scrollLabel {
+  position: absolute;
+  bottom: 10px;
+  right: 38px;
+  z-index: 100;
+  font-family: 'Malvides', serif;
+  font-size: 40px;
+  color: white;
+  white-space: nowrap;
+  pointer-events: none;
+  line-height: 1;
 }
