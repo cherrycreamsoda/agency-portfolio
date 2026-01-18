@@ -119,13 +119,7 @@
   overflow: visible;
 }
 
-/* Wave path - morphs from straight to wavy */
+/* Wave path - JS handles animation */
 .wavePath {
-  transition: d 1s ease-in-out;
-}
-
-/* Hover state - morph to wave */
-.orderButtonContainer:hover .wavePath {
-  d: path('M0,0 Q10,-8 20,0 T40,0 T60,0 T80,0 T100,0 T120,0 T140,0');
-  transform: translateY(2px);
+  /* No CSS transition needed - JS animates the d attribute */
 }
