@@ -29,9 +29,6 @@ interface ScrollControllerContextType {
   // Section offset for CSS transform (0 = Hero visible, 100 = Main visible)
   sectionOffset: number
   
-  // Reset Hero progress (called after transition to Main)
-  resetHeroProgress: () => void
-  
   // Ref for external reset function from Hero
   heroResetRef: React.MutableRefObject<(() => void) | null>
 }
@@ -57,9 +54,6 @@ export function ScrollControllerProvider({ children }: ScrollControllerProviderP
   
   // Ref for Hero's reset function
   const heroResetRef = useRef<(() => void) | null>(null)
-  
-  // Ref to track Main section scroll position
-  const mainScrollTopRef = useRef(0)
   
   // Transition animation duration
   const TRANSITION_DURATION = 800 // ms
@@ -148,14 +142,6 @@ export function ScrollControllerProvider({ children }: ScrollControllerProviderP
     return true // Normal Main scrolling
   }, [state])
 
-  // Reset Hero progress
-  const resetHeroProgress = useCallback(() => {
-    setProgressState(0)
-    if (heroResetRef.current) {
-      heroResetRef.current()
-    }
-  }, [])
-
   const value: ScrollControllerContextType = {
     state,
     progress,
@@ -163,7 +149,6 @@ export function ScrollControllerProvider({ children }: ScrollControllerProviderP
     handleHeroScroll,
     handleMainScrollAtTop,
     sectionOffset,
-    resetHeroProgress,
     heroResetRef,
   }
 

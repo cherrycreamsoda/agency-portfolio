@@ -77,8 +77,15 @@ export function Hero() {
   const fillRef = useRef<HTMLDivElement>(null)
   const progressRef = useRef<number>(0)
   const lastUpdateRef = useRef<number>(0)
+  
+  // State ref to avoid effect re-runs when state changes
+  const stateRef = useRef<typeof state>(state)
+  useEffect(() => {
+    stateRef.current = state
+  }, [state])
 
   // Reset function - resets orb position and progress visuals
+  // Note: We don't reset scrollVelocity here to preserve momentum during transitions
   const resetHeroState = useCallback(() => {
     progressRef.current = 0
     if (orbRef.current) {
@@ -87,7 +94,7 @@ export function Hero() {
     if (fillRef.current) {
       fillRef.current.style.height = "0%"
     }
-    scrollVelocityRef.current = 0
+    // Don't reset scrollVelocityRef here - preserve momentum
   }, [])
 
   // Register reset function with controller
@@ -136,24 +143,30 @@ export function Hero() {
     }
   }, [setProgress])
 
+  // Track if columns have been initialized (prevents reset on re-render)
+  const columnsInitializedRef = useRef(false)
+  const columnHeightsRef = useRef<number[]>([])
+
   useEffect(() => {
     if (!heroRef.current) return
 
-    const columnHeights: number[] = []
+    // Only initialize column positions once
+    if (!columnsInitializedRef.current) {
+      columnRefs.current.forEach((columnInner, index) => {
+        if (!columnInner) return
+        const halfHeight = columnInner.scrollHeight / 2
+        columnHeightsRef.current[index] = halfHeight
 
-    columnRefs.current.forEach((columnInner, index) => {
-      if (!columnInner) return
-      const halfHeight = columnInner.scrollHeight / 2
-      columnHeights[index] = halfHeight
-
-      // Set initial position - columns going up start at 0, columns going down start at -halfHeight
-      const config = columnConfig[index]
-      if (config.direction === -1) {
-        positionsRef.current[index] = 0
-      } else {
-        positionsRef.current[index] = -halfHeight
-      }
-    })
+        // Set initial position - columns going up start at 0, columns going down start at -halfHeight
+        const config = columnConfig[index]
+        if (config.direction === -1) {
+          positionsRef.current[index] = 0
+        } else {
+          positionsRef.current[index] = -halfHeight
+        }
+      })
+      columnsInitializedRef.current = true
+    }
 
     const baseSpeed = 0.5
 
@@ -162,7 +175,7 @@ export function Hero() {
         if (!columnInner || pausedRef.current[index]) return
 
         const config = columnConfig[index]
-        const halfHeight = columnHeights[index]
+        const halfHeight = columnHeightsRef.current[index]
         if (!halfHeight) return
 
         // Base movement + scroll influence (opposite direction)
@@ -202,16 +215,32 @@ export function Hero() {
     rafRef.current = requestAnimationFrame(animate)
 
     const handleWheel = (e: WheelEvent) => {
+      const currentState = stateRef.current
+      
+      // During TRANSITIONING_TO_HERO, accumulate scroll velocity but don't process
+      // This preserves momentum so when Hero becomes active, it continues smoothly
+      if (currentState === "TRANSITIONING_TO_HERO") {
+        scrollVelocityRef.current += e.deltaY * 0.015
+        return
+      }
+      
+      // During TRANSITIONING_TO_MAIN, reset velocity and block
+      // Main will handle accumulating scroll for its native scrolling
+      if (currentState === "TRANSITIONING_TO_MAIN") {
+        scrollVelocityRef.current = 0
+        return
+      }
+      
       // Ask controller if Hero should process this scroll
       const shouldProcess = handleHeroScroll(e.deltaY)
       
       if (!shouldProcess) {
-        // Don't process scroll - we're transitioning or blocked
+        // Don't process scroll - blocked for other reasons
         return
       }
       
-      // Only affect card columns in HERO_SCROLLING state
-      if (state === "HERO_SCROLLING") {
+      // Affect card columns in HERO_SCROLLING or HERO_READY state
+      if (currentState === "HERO_SCROLLING" || currentState === "HERO_READY") {
         scrollVelocityRef.current += e.deltaY * 0.015
       }
       
@@ -231,7 +260,7 @@ export function Hero() {
       }
       window.removeEventListener("wheel", handleWheel)
     }
-  }, [handleScrollVelocity, handleHeroScroll, state])
+  }, [handleScrollVelocity, handleHeroScroll])
 
   const handleColumnMouseEnter = (index: number) => {
     pausedRef.current[index] = true
