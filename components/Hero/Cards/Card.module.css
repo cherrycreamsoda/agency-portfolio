@@ -45,3 +45,27 @@
   margin: 0;
   line-height: var(--line-height-normal);
 }
+
+.arrowLink {
+  position: absolute;
+  right: var(--spacing-md);
+  bottom: var(--spacing-md);
+  background: rgba(0,0,0,0.2);
+  border-radius: 50%;
+  padding: 0.4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, opacity 0.2s;
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+}
+.card:hover .arrowLink, .card:focus-within .arrowLink {
+  opacity: 1;
+  pointer-events: auto;
+}
+.arrowLink:hover, .arrowLink:focus {
+  background: rgba(255,255,255,0.15);
+  outline: none;
+}

@@ -28,33 +28,7 @@ const calculateOrbPosition = (progress: number): string => {
   return `translate(${rx}%, ${ry}%)`
 }
 
-// AI Automation cards data
-const cardsData = [
-  {
-    title: "Order Booker AI Assistant",
-    description: "Automate order management and customer inquiries with intelligent conversational AI"
-  },
-  {
-    title: "AI Lead Qualification System",
-    description: "Qualify leads automatically and prioritize high-value prospects for your sales team"
-  },
-  {
-    title: "Customer Support AI Agent",
-    description: "24/7 intelligent customer support that learns from your business context"
-  },
-  {
-    title: "Invoice Processing Automation",
-    description: "Extract, validate, and process invoices automatically with AI precision"
-  },
-  {
-    title: "CRM Sync & Cleanup Automation",
-    description: "Keep your CRM data clean and synchronized across all business systems"
-  },
-  {
-    title: "Data Intelligence Engine",
-    description: "Transform raw data into actionable insights with AI-powered analytics"
-  }
-]
+import { cardsData } from "./Cards/CardData"
 
 const columnConfig = [
   { direction: -1 }, // Column 1: moves up
@@ -315,6 +289,8 @@ export function Hero() {
                       key={`orig-${rowIndex}`}
                       title={card.title}
                       description={card.description}
+                      href={card.href}
+                      icon={card.icon}
                     />
                   )
                 })}
@@ -327,6 +303,8 @@ export function Hero() {
                       key={`dup-${rowIndex}`}
                       title={card.title}
                       description={card.description}
+                      href={card.href}
+                      icon={card.icon}
                     />
                   )
                 })}
