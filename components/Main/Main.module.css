@@ -7,8 +7,8 @@
   overflow-y: auto;
   overflow-x: hidden;
   
-  /* Background */
-  background-color: var(--color-primary);
+  /* Background aligned with footer */
+  background-color: #31302b;
   
   /* Padding */
   padding: var(--spacing-2xl);

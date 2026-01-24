@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react"
 import styles from "./Main.module.css"
 import { useScrollController } from "@/context"
+import { Footer } from "@/components"
 
 // Generate 50 lines of sample text
 const sampleLines = Array.from({ length: 50 }, (_, i) => 
@@ -10,11 +11,19 @@ const sampleLines = Array.from({ length: 50 }, (_, i) =>
 )
 
 export function Main() {
-  const { state, handleMainScrollAtTop } = useScrollController()
-  const mainRef = useRef<HTMLElement>(null)
+  const { state, handleMainScrollAtTop, mainRef } = useScrollController()
+  const localMainRef = useRef<HTMLElement>(null)
   const isAtTopRef = useRef(true)
   
-  // Custom momentum scroll system (same approach as Hero)
+  // Sync the local ref with context mainRef
+  useEffect(() => {
+    mainRef.current = localMainRef.current
+    return () => {
+      mainRef.current = null
+    }
+  }, [mainRef])
+  
+  // Momentum for TRANSITIONING_TO_MAIN only
   const scrollVelocityRef = useRef(0)
   const rafRef = useRef<number | null>(null)
 
@@ -29,31 +38,33 @@ export function Main() {
     
     // Reset Main scroll position when transitioning from Hero
     if (prevState !== "TRANSITIONING_TO_MAIN" && state === "TRANSITIONING_TO_MAIN") {
-      const mainElement = mainRef.current
+      const mainElement = localMainRef.current
       if (mainElement) {
         mainElement.scrollTop = 0
         isAtTopRef.current = true
+        scrollVelocityRef.current = 0
       }
+    }
+    
+    // When entering MAIN_SCROLLING, clear momentum (native scroll takes over)
+    if (prevState === "TRANSITIONING_TO_MAIN" && state === "MAIN_SCROLLING") {
+      scrollVelocityRef.current = 0
     }
   }, [state])
 
-  // Momentum-based scroll animation loop
+  // Momentum animation - ONLY during transition
   useEffect(() => {
-    const mainElement = mainRef.current
+    const mainElement = localMainRef.current
     if (!mainElement) return
 
     const animate = () => {
       const currentState = stateRef.current
       
-      // Only apply velocity during MAIN_SCROLLING (not during transition)
-      if (currentState === "MAIN_SCROLLING") {
+      // Only apply custom momentum during transition (not MAIN_SCROLLING)
+      if (currentState === "TRANSITIONING_TO_MAIN") {
         if (Math.abs(scrollVelocityRef.current) > 0.1) {
           mainElement.scrollTop += scrollVelocityRef.current
-          
-          // Update isAtTop
           isAtTopRef.current = mainElement.scrollTop <= 0
-          
-          // Decay velocity (same rate as Hero)
           scrollVelocityRef.current *= 0.92
         } else {
           scrollVelocityRef.current = 0
@@ -65,53 +76,65 @@ export function Main() {
 
     rafRef.current = requestAnimationFrame(animate)
 
-    // Window-level wheel handler - captures all scroll events
-    const handleWheel = (e: WheelEvent) => {
+    // Window-level wheel handler for transition momentum
+    const handleWindowWheel = (e: WheelEvent) => {
       const currentState = stateRef.current
       
-      // During transition to Hero, reset velocity - Hero handles its own
-      if (currentState === "TRANSITIONING_TO_HERO") {
-        scrollVelocityRef.current = 0
-        return
-      }
-      
-      // During transition to Main, reset velocity (inertia reset from Hero)
-      // Don't accumulate - scroll is paused during transition
+      // During transition, accumulate momentum (native scroll is blocked)
       if (currentState === "TRANSITIONING_TO_MAIN") {
-        scrollVelocityRef.current = 0
-        return
-      }
-      
-      // Only accumulate velocity during MAIN_SCROLLING
-      if (currentState === "MAIN_SCROLLING") {
         scrollVelocityRef.current += e.deltaY * 0.15
-        
-        // Check for scroll-up at top to trigger transition back to Hero
-        if (isAtTopRef.current && e.deltaY < 0) {
-          handleMainScrollAtTop(e.deltaY)
-        }
       }
     }
 
-    const handleNativeScroll = () => {
-      // Track if we're at the top of the Main section
-      isAtTopRef.current = mainElement.scrollTop <= 0
-    }
-
-    window.addEventListener("wheel", handleWheel, { passive: true })
-    mainElement.addEventListener("scroll", handleNativeScroll, { passive: true })
+    window.addEventListener("wheel", handleWindowWheel, { passive: true })
 
     return () => {
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current)
       }
-      window.removeEventListener("wheel", handleWheel)
-      mainElement.removeEventListener("scroll", handleNativeScroll)
+      window.removeEventListener("wheel", handleWindowWheel)
+    }
+  }, [])
+
+  // Element-level handler for MAIN_SCROLLING state (native scroll)
+  useEffect(() => {
+    const mainElement = localMainRef.current
+    if (!mainElement) return
+
+    const handleScroll = () => {
+      isAtTopRef.current = mainElement.scrollTop <= 0
+    }
+
+    const handleWheel = (e: WheelEvent) => {
+      const currentState = stateRef.current
+      
+      // Block during transitions
+      if (currentState === "TRANSITIONING_TO_MAIN" || currentState === "TRANSITIONING_TO_HERO") {
+        e.preventDefault()
+        return
+      }
+      
+      // During MAIN_SCROLLING - let native scroll happen, but check for Hero transition
+      if (currentState === "MAIN_SCROLLING") {
+        if (isAtTopRef.current && e.deltaY < 0) {
+          handleMainScrollAtTop(e.deltaY)
+          e.preventDefault()
+        }
+        // Otherwise, native scroll handles it
+      }
+    }
+
+    mainElement.addEventListener("scroll", handleScroll, { passive: true })
+    mainElement.addEventListener("wheel", handleWheel, { passive: false })
+
+    return () => {
+      mainElement.removeEventListener("scroll", handleScroll)
+      mainElement.removeEventListener("wheel", handleWheel)
     }
   }, [handleMainScrollAtTop])
 
   return (
-    <section className={styles.main} ref={mainRef}>
+    <section className={styles.main} ref={localMainRef}>
       <div className={styles.content}>
         <h2 className={styles.title}>Main Section</h2>
         {sampleLines.map((line, index) => (
@@ -120,6 +143,7 @@ export function Main() {
           </p>
         ))}
       </div>
+        <Footer />
     </section>
   )
 }

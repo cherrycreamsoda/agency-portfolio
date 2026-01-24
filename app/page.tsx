@@ -10,7 +10,7 @@ function PageContent() {
   // Calculate transform based on section offset
   // 0 = Hero visible (translateY: 0)
   // 100 = Main visible (translateY: -100vh)
-  const isTransitioning = state === "TRANSITIONING_TO_MAIN" || state === "TRANSITIONING_TO_HERO"
+  const isTransitioning = state === "TRANSITIONING_TO_MAIN" || state === "TRANSITIONING_TO_HERO" || state === "SCROLLING_TO_FOOTER"
   
   return (
     <main className={styles.container}>

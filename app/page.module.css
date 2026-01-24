@@ -2,7 +2,7 @@
   position: relative;
   height: 100vh;
   width: 100%;
-  background-color: var(--color-primary);
+  background-color: #31302b;
   overflow: hidden; /* Prevent native scrolling - we control it */
 }
 

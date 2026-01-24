@@ -9,6 +9,7 @@ export type ScrollState =
   | "TRANSITIONING_TO_MAIN" // Animating Hero away, all scroll blocked
   | "MAIN_SCROLLING"      // User is on Main, free scrolling
   | "TRANSITIONING_TO_HERO" // Animating back to Hero, all scroll blocked
+  | "SCROLLING_TO_FOOTER"  // Programmatic scroll to footer, all input blocked
 
 interface ScrollControllerContextType {
   // Current state
@@ -31,6 +32,12 @@ interface ScrollControllerContextType {
   
   // Ref for external reset function from Hero
   heroResetRef: React.MutableRefObject<(() => void) | null>
+  
+  // Ref to Main element for programmatic scrolling
+  mainRef: React.MutableRefObject<HTMLElement | null>
+  
+  // Scroll to footer programmatically
+  scrollToFooter: () => void
 }
 
 const ScrollControllerContext = createContext<ScrollControllerContextType | null>(null)
@@ -55,8 +62,12 @@ export function ScrollControllerProvider({ children }: ScrollControllerProviderP
   // Ref for Hero's reset function
   const heroResetRef = useRef<(() => void) | null>(null)
   
+  // Ref for Main element (set by Main component)
+  const mainRef = useRef<HTMLElement | null>(null)
+  
   // Transition animation duration
   const TRANSITION_DURATION = 800 // ms
+  const SCROLL_TO_FOOTER_DURATION = 1000 // ms for smooth scroll to footer
 
   // Set progress from Hero
   const setProgress = useCallback((newProgress: number) => {
@@ -117,6 +128,74 @@ export function ScrollControllerProvider({ children }: ScrollControllerProviderP
     return false
   }, [state])
 
+  // Scroll to footer programmatically - blocks all user input
+  const scrollToFooter = useCallback(() => {
+    // Block if already scrolling to footer
+    if (state === "SCROLLING_TO_FOOTER") return
+    
+    setState("SCROLLING_TO_FOOTER")
+    
+    // Determine if we need to transition from Hero first
+    const needsHeroTransition = state === "HERO_SCROLLING" || state === "HERO_READY"
+    
+    if (needsHeroTransition) {
+      // Trigger the same transition as normal Hero-to-Main
+      setSectionOffset(100)
+      
+      // After transition completes, reset Hero and scroll to footer
+      setTimeout(() => {
+        // Reset Hero progress (same as normal transition)
+        setProgressState(0)
+        if (heroResetRef.current) {
+          heroResetRef.current()
+        }
+        
+        // Now scroll to footer
+        scrollMainToFooter()
+      }, TRANSITION_DURATION)
+    } else if (state === "MAIN_SCROLLING") {
+      // Already on Main, just scroll to footer
+      scrollMainToFooter()
+    } else {
+      // In some transition state, restore
+      setState("MAIN_SCROLLING")
+    }
+  }, [state])
+  
+  // Helper function to scroll Main section to footer
+  const scrollMainToFooter = useCallback(() => {
+    const mainElement = mainRef.current
+    if (mainElement) {
+      const targetScroll = mainElement.scrollHeight - mainElement.clientHeight
+      const startScroll = mainElement.scrollTop
+      const startTime = performance.now()
+      
+      const animateScroll = (currentTime: number) => {
+        const elapsed = currentTime - startTime
+        const progress = Math.min(elapsed / SCROLL_TO_FOOTER_DURATION, 1)
+        
+        // Ease out cubic for smooth deceleration
+        const eased = 1 - Math.pow(1 - progress, 3)
+        
+        if (mainElement) {
+          mainElement.scrollTop = startScroll + (targetScroll - startScroll) * eased
+        }
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateScroll)
+        } else {
+          // Animation complete, restore normal state
+          setState("MAIN_SCROLLING")
+        }
+      }
+      
+      requestAnimationFrame(animateScroll)
+    } else {
+      // No main element, just restore state
+      setState("MAIN_SCROLLING")
+    }
+  }, [])
+
   // Handle scroll from Main section (when at top and scrolling up)
   const handleMainScrollAtTop = useCallback((deltaY: number): boolean => {
     if (state !== "MAIN_SCROLLING") {
@@ -150,11 +229,33 @@ export function ScrollControllerProvider({ children }: ScrollControllerProviderP
     handleMainScrollAtTop,
     sectionOffset,
     heroResetRef,
+    mainRef,
+    scrollToFooter,
   }
+
+  // Check if we should block all user input
+  const isBlocking = state === "SCROLLING_TO_FOOTER"
 
   return (
     <ScrollControllerContext.Provider value={value}>
       {children}
+      {isBlocking && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 99999,
+            cursor: "wait",
+          }}
+          onWheel={(e) => e.preventDefault()}
+          onTouchMove={(e) => e.preventDefault()}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+        />
+      )}
     </ScrollControllerContext.Provider>
   )
 }
