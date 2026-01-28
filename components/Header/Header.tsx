@@ -4,6 +4,10 @@ import { useRef, useCallback, useEffect, useState } from "react"
 import styles from "./Header.module.css"
 import { useScrollController } from "@/context"
 
+export interface HeaderProps {
+  buttonText: string
+}
+
 const FEEDTAPE_ANIMATION_DURATION = 300 // ms - must match CSS animation duration
 const WAVE_ANIMATION_DURATION = 600 // ms for wave morph
 
@@ -33,7 +37,7 @@ const generateWavePath = (amplitude: number): string => {
   return points.join(' ')
 }
 
-export function Header() {
+export function Header({ buttonText }: HeaderProps) {
   const { scrollToFooter } = useScrollController()
   const tapeRef = useRef<HTMLDivElement>(null)
   const pathRef = useRef<SVGPathElement>(null)
@@ -178,9 +182,9 @@ export function Header() {
         >
           <div className={styles.feedtapeWrapper}>
             <div className={styles.feedtape} ref={tapeRef}>
-              <span className={styles.feedtapeItem}>Contact Us</span>
-              <span className={styles.feedtapeItem}>Contact Us</span>
-              <span className={styles.feedtapeItem}>Contact Us</span>
+              <span className={styles.feedtapeItem}>{buttonText}</span>
+              <span className={styles.feedtapeItem}>{buttonText}</span>
+              <span className={styles.feedtapeItem}>{buttonText}</span>
             </div>
           </div>
         </button>

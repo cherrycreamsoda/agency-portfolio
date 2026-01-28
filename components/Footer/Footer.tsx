@@ -1,9 +1,18 @@
 "use client"
 
+import React from "react"
+
 import { useEffect, useRef, useState } from "react"
 import styles from "./Footer.module.css"
 
-export function Footer() {
+export interface FooterProps {
+  contactEmail: string
+  footerTitle: string
+  footerSubtitle: string
+  copyrightText: string
+}
+
+export function Footer({ contactEmail, footerTitle, footerSubtitle, copyrightText }: FooterProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -67,10 +76,15 @@ export function Footer() {
   }
 
   const copyEmail = () => {
-    navigator.clipboard.writeText("hello@agency.com")
+    navigator.clipboard.writeText(contactEmail)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+  
+  // Split email into two lines for display (before and after @)
+  const emailParts = contactEmail.split("@")
+  const emailLine1 = emailParts[0] + "@"
+  const emailLine2 = emailParts[1] || ""
 
   return (
     <footer ref={footerRef} className={styles.footer}>
@@ -86,8 +100,8 @@ export function Footer() {
               onClick={copyEmail}
               className={styles.bigEmail}
             >
-              <span className={styles.emailLine}>hello@</span>
-              <span className={styles.emailLine}>agency.com</span>
+              <span className={styles.emailLine}>{emailLine1}</span>
+              <span className={styles.emailLine}>{emailLine2}</span>
             </button>
             {copied && <span className={styles.copiedToast}>Copied!</span>}
           </div>
@@ -95,8 +109,8 @@ export function Footer() {
           {/* Right Side - Title + Form */}
           <div className={styles.formSection}>
             <div className={styles.formHeader}>
-              <h2 className={styles.contactTitle}>Let's Work Together</h2>
-              <p className={styles.contactSubtitle}>Have a project in mind? Let's make it happen.</p>
+              <h2 className={styles.contactTitle}>{footerTitle}</h2>
+              <p className={styles.contactSubtitle}>{footerSubtitle}</p>
             </div>
             
             <form onSubmit={handleSubmit} className={styles.contactForm}>
@@ -147,7 +161,7 @@ export function Footer() {
 
         {/* Bottom Copyright */}
         <div className={styles.footerBottom}>
-          <span className={styles.copyright}>© 2026 Agency. All rights reserved.</span>
+          <span className={styles.copyright}>{copyrightText}</span>
         </div>
       </div>
     </footer>

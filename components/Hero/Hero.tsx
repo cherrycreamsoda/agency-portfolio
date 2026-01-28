@@ -5,6 +5,7 @@ import styles from "./Hero.module.css"
 import { Card } from "./Cards"
 import { GlassmorphicOverlay } from "../GlassmorphicOverlay"
 import { useScrollController } from "@/context"
+import type { ServiceDTO } from "@/types/database"
 
 // Optimized position calculation for orb
 const calculateOrbPosition = (progress: number): string => {
@@ -28,14 +29,17 @@ const calculateOrbPosition = (progress: number): string => {
   return `translate(${rx}%, ${ry}%)`
 }
 
-import { cardsData } from "./Cards/CardData"
-
 const columnConfig = [
   { direction: -1 }, // Column 1: moves up
   { direction: 1 }, // Column 2: moves down
 ]
 
-export function Hero() {
+export interface HeroProps {
+  heroTitle: string
+  services: ServiceDTO[]
+}
+
+export function Hero({ heroTitle, services }: HeroProps) {
   const { state, setProgress, handleHeroScroll, heroResetRef, progress } = useScrollController()
   
   const heroRef = useRef<HTMLElement>(null)
@@ -244,6 +248,9 @@ export function Hero() {
     pausedRef.current[index] = false
   }
 
+  // Ensure we have at least 6 services for the two columns
+  const displayServices = services.length >= 6 ? services : [...services, ...services].slice(0, 6)
+
   return (
     <div className={styles.heroWrapper}>
       {/* Bleeding orb - contained within hero wrapper */}
@@ -255,7 +262,7 @@ export function Hero() {
       {/* Progress capsule - contained within hero wrapper */}
       <section className={styles.hero} data-hero ref={heroRef}>
         <div className={styles.heroLeft}>
-          <h1 className={styles.heroTitle}>Welcome to Our Agency</h1>
+          <h1 className={styles.heroTitle}>{heroTitle}</h1>
           
           {/* Scroll label - positioned to the left of progress capsule */}
           <div className={styles.scrollLabel}>Scroll</div>
@@ -268,51 +275,53 @@ export function Hero() {
         <div className={styles.heroRight}>
           <div className={styles.columnsWrapper}>
             {[0, 1].map((colIndex) => (
-            <div
-              key={colIndex}
-              className={styles.column}
-              onMouseEnter={() => handleColumnMouseEnter(colIndex)}
-              onMouseLeave={() => handleColumnMouseLeave(colIndex)}
-            >
               <div
-                className={styles.columnInner}
-                ref={(el) => {
-                  columnRefs.current[colIndex] = el
-                }}
+                key={colIndex}
+                className={styles.column}
+                onMouseEnter={() => handleColumnMouseEnter(colIndex)}
+                onMouseLeave={() => handleColumnMouseLeave(colIndex)}
               >
-                {/* Original cards - 3 cards per column */}
-                {[0, 1, 2].map((rowIndex) => {
-                  const cardIndex = colIndex * 3 + rowIndex
-                  const card = cardsData[cardIndex]
-                  return (
-                    <Card
-                      key={`orig-${rowIndex}`}
-                      title={card.title}
-                      description={card.description}
-                      href={card.href}
-                      icon={card.icon}
-                    />
-                  )
-                })}
-                {/* Duplicated cards for seamless loop */}
-                {[0, 1, 2].map((rowIndex) => {
-                  const cardIndex = colIndex * 3 + rowIndex
-                  const card = cardsData[cardIndex]
-                  return (
-                    <Card
-                      key={`dup-${rowIndex}`}
-                      title={card.title}
-                      description={card.description}
-                      href={card.href}
-                      icon={card.icon}
-                    />
-                  )
-                })}
+                <div
+                  className={styles.columnInner}
+                  ref={(el) => {
+                    columnRefs.current[colIndex] = el
+                  }}
+                >
+                  {/* Original cards - 3 cards per column */}
+                  {[0, 1, 2].map((rowIndex) => {
+                    const cardIndex = colIndex * 3 + rowIndex
+                    const service = displayServices[cardIndex]
+                    if (!service) return null
+                    return (
+                      <Card
+                        key={`orig-${rowIndex}`}
+                        title={service.title}
+                        description={service.description}
+                        href={`/buy?service=${encodeURIComponent(service.slug)}`}
+                        icon={null}
+                      />
+                    )
+                  })}
+                  {/* Duplicated cards for seamless loop */}
+                  {[0, 1, 2].map((rowIndex) => {
+                    const cardIndex = colIndex * 3 + rowIndex
+                    const service = displayServices[cardIndex]
+                    if (!service) return null
+                    return (
+                      <Card
+                        key={`dup-${rowIndex}`}
+                        title={service.title}
+                        description={service.description}
+                        href={`/buy?service=${encodeURIComponent(service.slug)}`}
+                        icon={null}
+                      />
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
       </section>
     </div>
   )

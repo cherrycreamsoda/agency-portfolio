@@ -3,14 +3,19 @@
 import { useRef, useEffect } from "react"
 import styles from "./Main.module.css"
 import { useScrollController } from "@/context"
-import { Footer } from "@/components"
+import { Footer, type FooterProps } from "@/components"
 
 // Generate 50 lines of sample text
 const sampleLines = Array.from({ length: 50 }, (_, i) => 
   `Line ${i + 1}: This is sample content for the Main section. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.`
 )
 
-export function Main() {
+export interface MainProps {
+  mainSectionTitle: string
+  footerProps: FooterProps
+}
+
+export function Main({ mainSectionTitle, footerProps }: MainProps) {
   const { state, handleMainScrollAtTop, mainRef } = useScrollController()
   const localMainRef = useRef<HTMLElement>(null)
   const isAtTopRef = useRef(true)
@@ -136,14 +141,14 @@ export function Main() {
   return (
     <section className={styles.main} ref={localMainRef}>
       <div className={styles.content}>
-        <h2 className={styles.title}>Main Section</h2>
+        <h2 className={styles.title}>{mainSectionTitle}</h2>
         {sampleLines.map((line, index) => (
           <p key={index} className={styles.paragraph}>
             {line}
           </p>
         ))}
       </div>
-        <Footer />
+        <Footer {...footerProps} />
     </section>
   )
 }
