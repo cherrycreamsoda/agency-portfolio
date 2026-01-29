@@ -11,7 +11,7 @@
   background-color: #31302b;
   
   /* Padding */
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-lg);
 }
 
 /* Scrollbar styling */
@@ -51,13 +51,13 @@
   font-size: var(--font-size-4xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-secondary);
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
 }
 
 .paragraph {
   font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   line-height: var(--line-height-relaxed);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
   opacity: 0.8;
 }

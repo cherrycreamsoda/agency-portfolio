@@ -1,6 +1,6 @@
 .footer {
   background: #31302b;
-  min-height: 80vh;
+  min-height: 50vh;
   color: var(--color-text-primary);
   position: relative;
   overflow: hidden;
@@ -12,6 +12,7 @@
     0 20px 60px rgba(0, 0, 0, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
+  margin-top: 30px;
 }
 
 .footerContent {
@@ -22,7 +23,7 @@
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
-  padding: var(--spacing-4xl) var(--spacing-2xl) 0 var(--spacing-2xl);
+  padding: var(--spacing-2xl) var(--spacing-2xl) 0 var(--spacing-2xl);
   position: relative;
   z-index: 2;
 }
@@ -53,7 +54,7 @@
 .contactGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-4xl);
+  gap: var(--spacing-2xl);
   align-items: center;
   flex: 1;
 }
@@ -61,7 +62,7 @@
 @media (max-width: 900px) {
   .contactGrid {
     grid-template-columns: 1fr;
-    gap: var(--spacing-3xl);
+    gap: var(--spacing-xl);
   }
 }
 
@@ -142,7 +143,7 @@
 }
 
 .formHeader {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
 }
 
 .contactTitle {
@@ -160,8 +161,8 @@
 .contactForm {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  padding-bottom: var(--spacing-2xl);
+  gap: var(--spacing-sm);
+  padding-bottom: var(--spacing-lg);
 }
 
 .formRow {
@@ -240,8 +241,8 @@
 /* Footer Bottom */
 .footerBottom {
   text-align: center;
-  padding-top: var(--spacing-2xl);
-  padding-bottom: var(--spacing-2xl);
+  padding-top: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
