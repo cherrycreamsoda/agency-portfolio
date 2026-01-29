@@ -172,7 +172,9 @@ export function Header({ buttonText }: HeaderProps) {
 
   return (
     <div className={styles.headerContainer}>
-      <div className={styles.headerBar} />
+      <div className={styles.headerBar}>
+        <span className={styles.brandName}>Optivon</span>
+      </div>
       <div className={styles.orderButtonContainer}>
         <button 
           className={styles.orderButton}

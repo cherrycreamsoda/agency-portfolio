@@ -1,11 +1,108 @@
 "use client"
 
+import React, { useMemo } from "react"
+
 import { useEffect, useRef, useCallback } from "react"
 import styles from "./Hero.module.css"
 import { Card } from "./Cards"
 import { GlassmorphicOverlay } from "../GlassmorphicOverlay"
 import { useScrollController } from "@/context"
 import type { ServiceDTO } from "@/types/database"
+
+// Calculate per-letter style based on scroll progress
+const getLetterStyle = (letterIndex: number, totalLetters: number, progress: number): React.CSSProperties => {
+  // Each letter activates over a portion of the scroll
+  const letterProgress = (letterIndex / totalLetters) * 100
+  
+  // Letter starts transitioning when progress reaches its threshold
+  const transitionStart = letterProgress * 0.7
+  const transitionRange = 35
+  
+  // Calculate how "activated" this letter is (0 to 1)
+  let activation = 0
+  if (progress > transitionStart) {
+    activation = Math.min(1, (progress - transitionStart) / transitionRange)
+  }
+  
+  // Interpolate color from white to orange
+  const baseColor = { r: 255, g: 255, b: 255 }
+  const targetColor = { r: 255, g: 107, b: 0 }
+  
+  const r = Math.round(baseColor.r + (targetColor.r - baseColor.r) * activation)
+  const g = Math.round(baseColor.g + (targetColor.g - baseColor.g) * activation)
+  const b = Math.round(baseColor.b + (targetColor.b - baseColor.b) * activation)
+  
+  // Scale: starts at 1, peaks at 1.15 at 50% activation, returns to 1
+  const scalePeak = 1.15
+  const scale = activation < 0.5 
+    ? 1 + (scalePeak - 1) * (activation * 2)
+    : scalePeak - (scalePeak - 1) * ((activation - 0.5) * 2)
+  
+  return {
+    color: `rgb(${r}, ${g}, ${b})`,
+    transform: `scale(${scale})`,
+  }
+}
+
+// Animated text component that renders each letter with scroll-based animation
+// Uses ref-based updates for smooth 60fps animation
+interface AnimatedTextProps {
+  text: string
+  progressRef: React.MutableRefObject<number>
+}
+
+function AnimatedText({ text, progressRef }: AnimatedTextProps) {
+  const containerRef = useRef<HTMLSpanElement>(null)
+  const letterRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const letters = useMemo(() => text.split(''), [text])
+  const rafIdRef = useRef<number | null>(null)
+  const lastProgressRef = useRef<number>(-1)
+  
+  useEffect(() => {
+    // Initialize refs array
+    letterRefs.current = letterRefs.current.slice(0, letters.length)
+    
+    const updateLetterStyles = () => {
+      const currentProgress = progressRef.current
+      
+      // Only update if progress actually changed (optimization)
+      if (Math.abs(currentProgress - lastProgressRef.current) > 0.1) {
+        lastProgressRef.current = currentProgress
+        
+        letterRefs.current.forEach((letterEl, index) => {
+          if (!letterEl) return
+          const style = getLetterStyle(index, letters.length, currentProgress)
+          letterEl.style.color = style.color as string
+          letterEl.style.transform = style.transform as string
+        })
+      }
+      
+      rafIdRef.current = requestAnimationFrame(updateLetterStyles)
+    }
+    
+    rafIdRef.current = requestAnimationFrame(updateLetterStyles)
+    
+    return () => {
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+    }
+  }, [letters, progressRef])
+  
+  return (
+    <span ref={containerRef}>
+      {letters.map((letter, index) => (
+        <span
+          key={index}
+          ref={(el) => { letterRefs.current[index] = el }}
+          className={styles.animatedLetter}
+        >
+          {letter === ' ' ? '\u00A0' : letter}
+        </span>
+      ))}
+    </span>
+  )
+}
 
 // Optimized position calculation for orb
 const calculateOrbPosition = (progress: number): string => {
@@ -262,7 +359,9 @@ export function Hero({ heroTitle, services }: HeroProps) {
       {/* Progress capsule - contained within hero wrapper */}
       <section className={styles.hero} data-hero ref={heroRef}>
         <div className={styles.heroLeft}>
-          <h1 className={styles.heroTitle}>{heroTitle}</h1>
+          <h1 className={styles.heroTitle}>
+            <AnimatedText text={heroTitle} progressRef={progressRef} />
+          </h1>
           
           {/* Scroll label - positioned to the left of progress capsule */}
           <div className={styles.scrollLabel}>Scroll</div>

@@ -18,6 +18,17 @@
   border: var(--border-thick) solid var(--color-border);
   background-color: #00000022;
   backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  padding-left: var(--spacing-lg);
+}
+
+/* Brand name */
+.brandName {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
 }
 
 /* Order Now button container */
